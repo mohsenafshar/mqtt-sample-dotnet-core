@@ -5,7 +5,7 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
 
-namespace Client
+namespace SecondClient
 {
     class Program
     {
@@ -19,20 +19,6 @@ namespace Client
             Console.ReadLine();
         }
 
-        private static async void CreateSecondClient()
-        {
-            
-            var mqttFactory = new MqttFactory();
-            var client = mqttFactory.CreateMqttClient();
-            
-            var options = new MqttClientOptionsBuilder()
-                .WithClientId(Guid.NewGuid().ToString())
-                .WithTcpServer("localhost", 1883)
-                .Build();
-            
-            var mqttClientAuthenticateResult = client.ConnectAsync(options).Result;
-        }
-
         private static async void StartClient()
         {
             // Create a new MQTT client.
@@ -40,7 +26,7 @@ namespace Client
             var mqttClient = factory.CreateMqttClient();
             
             var options = new MqttClientOptionsBuilder()
-                .WithClientId("Client1")
+                .WithClientId("Client2")
                 .WithTcpServer("localhost", 1883)
                 .WithCredentials("Hans", "Test")
                 // .WithTls()
@@ -60,18 +46,19 @@ namespace Client
             mqttClient.UseApplicationMessageReceivedHandler(e =>
             {
                 Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
+                // Console.WriteLine($"+ ClientId = {e.ApplicationMessage.UserProperties.ToString()}");
                 Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
                 Console.WriteLine($"+ Payload = {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
                 Console.WriteLine($"+ QoS = {e.ApplicationMessage.QualityOfServiceLevel}");
                 Console.WriteLine($"+ Retain = {e.ApplicationMessage.Retain}");
                 Console.WriteLine();
 
-                // Task.Run(() => mqttClient.PublishAsync("hello/world"));
+                Task.Run(() => mqttClient.PublishAsync("hello/world"));
             });
             
             var message = new MqttApplicationMessageBuilder()
                 .WithTopic("test/topic")
-                .WithPayload("1")
+                .WithPayload("2")
                 .WithExactlyOnceQoS()
                 .WithRetainFlag()
                 .Build();
